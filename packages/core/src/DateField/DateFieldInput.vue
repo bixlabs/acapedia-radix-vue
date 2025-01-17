@@ -35,7 +35,7 @@ const {
   readonly: rootContext.readonly,
   focusNext: rootContext.focusNext,
   modelValue: rootContext.modelValue,
-  programmaticContinuation: rootContext.programmaticContinuation,
+  isCarrying: rootContext.isCarrying,
 })
 
 const disabled = computed(() => rootContext.disabled.value)
@@ -43,7 +43,7 @@ const readonly = computed(() => rootContext.readonly.value)
 const isInvalid = computed(() => rootContext.isInvalid.value)
 
 function handleFocusOut(e: FocusEvent) {
-  if (rootContext.programmaticContinuation.value) {
+  if (rootContext.isCarrying.value) {
     hasLeftFocus.value = false
   }
   else {
@@ -53,48 +53,52 @@ function handleFocusOut(e: FocusEvent) {
 
 function handleFocusIn(e: FocusEvent) {
   rootContext.setFocusedElement(e.target as HTMLElement)
-  const dayValue = rootContext.segmentValues.value.day
-  const yearValue = rootContext.segmentValues.value.year
 
-  if (rootContext.programmaticContinuation.value) {
-    if (props.part === 'year' && yearValue) {
-      // create key event for keyword with rootContext.segmentValues.value.year
-      const event = new KeyboardEvent('keydown', {
-        key: yearValue.toString(),
-        code: `Digit${yearValue}`,
-        keyCode: 48 + yearValue,
-        which: 48 + yearValue,
-        bubbles: true,
-        cancelable: true,
-      })
-
-      console.log('triggering keydown for year', event)
-
-      hasLeftFocus.value = false
-      handleSegmentKeydown(event)
-      rootContext.programmaticContinuation.value = false
-    }
-    else if (props.part === 'day' && dayValue) {
-      // create key event for keyword with rootContext.segmentValues.value.day
-      const event = new KeyboardEvent('keydown', {
-        key: dayValue.toString(),
-        code: `Digit${dayValue}`,
-        keyCode: 48 + dayValue,
-        which: 48 + dayValue,
-        bubbles: true,
-        cancelable: true,
-      })
-
-      console.log('triggering keydown for day', event)
-
-      hasLeftFocus.value = false
-      handleSegmentKeydown(event)
-      rootContext.programmaticContinuation.value = false
-    }
+  if (rootContext.isCarrying.value) {
+    keyDownCarry()
   }
   else {
     hasLeftFocus.value = true
   }
+}
+
+function keyDownCarry() {
+  const dayValue = rootContext.segmentValues.value.day
+  const yearValue = rootContext.segmentValues.value.year
+
+  if (props.part === 'year' && yearValue) {
+    keyDownCarryYear(yearValue)
+  }
+  else if (props.part === 'day' && dayValue) {
+    keyDownCarryDay(dayValue)
+  }
+}
+
+function keyDownCarryYear(year: number) {
+  const event = createKeyDownEvent(year)
+
+  hasLeftFocus.value = false
+  handleSegmentKeydown(event)
+  rootContext.isCarrying.value = false
+}
+
+function keyDownCarryDay(day: number) {
+  const event = createKeyDownEvent(day)
+
+  hasLeftFocus.value = false
+  handleSegmentKeydown(event)
+  rootContext.isCarrying.value = false
+}
+
+function createKeyDownEvent(num: number) {
+  return new KeyboardEvent('keydown', {
+    key: num.toString(),
+    code: `Digit${num}`,
+    keyCode: 48 + num,
+    which: 48 + num,
+    bubbles: true,
+    cancelable: true,
+  })
 }
 </script>
 

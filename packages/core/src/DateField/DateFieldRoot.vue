@@ -34,7 +34,7 @@ type DateFieldRootContext = {
   elements: Ref<Set<HTMLElement>>
   focusNext: () => void
   setFocusedElement: (el: HTMLElement) => void
-  programmaticContinuation: Ref<boolean>
+  isCarrying: Ref<boolean>
 }
 
 export interface DateFieldRootProps extends PrimitiveProps, FormFieldProps {
@@ -248,7 +248,7 @@ function setFocusedElement(el: HTMLElement) {
   currentFocusedElement.value = el
 }
 
-const programmaticContinuation = ref(false)
+const isCarrying = ref(false)
 
 provideDateFieldRootContext({
   isDateUnavailable: propsIsDateUnavailable.value,
@@ -267,7 +267,7 @@ provideDateFieldRootContext({
   focusNext() {
     nextFocusableSegment.value?.focus()
   },
-  programmaticContinuation,
+  isCarrying,
 })
 
 defineExpose({

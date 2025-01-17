@@ -278,7 +278,7 @@ export type UseDateFieldProps = {
   part: SegmentPart
   modelValue: Ref<DateValue | undefined>
   focusNext: () => void
-  programmaticContinuation: Ref<boolean>
+  isCarrying: Ref<boolean>
 }
 
 export function useDateField(props: UseDateFieldProps) {
@@ -335,13 +335,13 @@ export function useDateField(props: UseDateFieldProps) {
      * `prev` value so that we can start the segment over again
      * when the user types a number.
      */
-    if (props.hasLeftFocus.value && !props.programmaticContinuation.value) {
+    if (props.hasLeftFocus.value && !props.isCarrying.value) {
       props.hasLeftFocus.value = false
       prev = null
     }
 
-    if (props.programmaticContinuation.value) {
-      props.programmaticContinuation.value = false
+    if (props.isCarrying.value) {
+      props.isCarrying.value = false
     }
 
     if (prev === null) {
@@ -398,7 +398,7 @@ export function useDateField(props: UseDateFieldProps) {
        */
       if (max === 12 && prev === 1 && total > max) {
         console.log('enter 1')
-        props.programmaticContinuation.value = true
+        props.isCarrying.value = true
 
         return {
           moveToNext: true,
@@ -413,7 +413,7 @@ export function useDateField(props: UseDateFieldProps) {
         })
 
         if (prev === 3 && total > max) {
-          props.programmaticContinuation.value = true
+          props.isCarrying.value = true
 
           return {
             moveToNext: true,
@@ -612,13 +612,13 @@ export function useDateField(props: UseDateFieldProps) {
      * when the user types a number.
      */
     // probably not implement, kind of weird
-    if (props.hasLeftFocus.value && !props.programmaticContinuation.value) {
+    if (props.hasLeftFocus.value && !props.isCarrying.value) {
       props.hasLeftFocus.value = false
       prev = null
     }
 
-    if (props.programmaticContinuation.value) {
-      props.programmaticContinuation.value = false
+    if (props.isCarrying.value) {
+      props.isCarrying.value = false
     }
 
     if (prev === null)
@@ -662,7 +662,7 @@ export function useDateField(props: UseDateFieldProps) {
         ? getDaysInMonth(props.placeholder.value.set({ month: segmentMonthValue }))
         : getDaysInMonth(props.placeholder.value)
 
-      const { value, moveToNext, nextSegmentInitialValue } = updateDayOrMonth(daysInMonth, num, props.programmaticContinuation.value ? null : prevValue)
+      const { value, moveToNext, nextSegmentInitialValue } = updateDayOrMonth(daysInMonth, num, props.isCarrying.value ? null : prevValue)
       props.segmentValues.value.day = value
 
       if (nextSegmentInitialValue) {
@@ -724,8 +724,8 @@ export function useDateField(props: UseDateFieldProps) {
 
     if (isNumberString(e.key)) {
       const num = Number.parseInt(e.key)
-      const { value, moveToNext } = updateYear(num, props.programmaticContinuation.value ? null : prevValue)
-      if (!props.programmaticContinuation.value) {
+      const { value, moveToNext } = updateYear(num, props.isCarrying.value ? null : prevValue)
+      if (!props.isCarrying.value) {
         props.segmentValues.value.year = value
       }
 
