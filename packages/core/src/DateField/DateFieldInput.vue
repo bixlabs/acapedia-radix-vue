@@ -2,8 +2,8 @@
 import { Primitive, type PrimitiveProps } from '@/Primitive'
 import type { SegmentPart } from '@/shared/date'
 import { useDateField } from '@/shared/date/useDateField'
-import { injectDateFieldRootContext } from './DateFieldRoot.vue'
 import { computed, ref } from 'vue'
+import { injectDateFieldRootContext } from './DateFieldRoot.vue'
 
 export interface DateFieldInputProps extends PrimitiveProps {
   /** The part of the date to render */
@@ -35,11 +35,71 @@ const {
   readonly: rootContext.readonly,
   focusNext: rootContext.focusNext,
   modelValue: rootContext.modelValue,
+  isCarrying: rootContext.isCarrying,
 })
 
 const disabled = computed(() => rootContext.disabled.value)
 const readonly = computed(() => rootContext.readonly.value)
 const isInvalid = computed(() => rootContext.isInvalid.value)
+
+function handleFocusOut(e: FocusEvent) {
+  if (rootContext.isCarrying.value) {
+    hasLeftFocus.value = false
+  }
+  else {
+    hasLeftFocus.value = true
+  }
+}
+
+function handleFocusIn(e: FocusEvent) {
+  rootContext.setFocusedElement(e.target as HTMLElement)
+
+  if (rootContext.isCarrying.value) {
+    keyDownCarry()
+  }
+  else {
+    hasLeftFocus.value = true
+  }
+}
+
+function keyDownCarry() {
+  const dayValue = rootContext.segmentValues.value.day
+  const yearValue = rootContext.segmentValues.value.year
+
+  if (props.part === 'year' && yearValue) {
+    keyDownCarryYear(yearValue)
+  }
+  else if (props.part === 'day' && dayValue) {
+    keyDownCarryDay(dayValue)
+  }
+}
+
+function keyDownCarryYear(year: number) {
+  const event = createKeyDownEvent(year)
+
+  hasLeftFocus.value = false
+  handleSegmentKeydown(event)
+  rootContext.isCarrying.value = false
+}
+
+function keyDownCarryDay(day: number) {
+  const event = createKeyDownEvent(day)
+
+  hasLeftFocus.value = false
+  handleSegmentKeydown(event)
+  rootContext.isCarrying.value = false
+}
+
+function createKeyDownEvent(num: number) {
+  return new KeyboardEvent('keydown', {
+    key: num.toString(),
+    code: `Digit${num}`,
+    keyCode: 48 + num,
+    which: 48 + num,
+    bubbles: true,
+    cancelable: true,
+  })
+}
 </script>
 
 <template>
@@ -57,10 +117,8 @@ const isInvalid = computed(() => rootContext.isInvalid.value)
     v-on="part !== 'literal' ? {
       mousedown: handleSegmentClick,
       keydown: handleSegmentKeydown,
-      focusout: () => { hasLeftFocus = true },
-      focusin: (e: FocusEvent) => {
-        rootContext.setFocusedElement(e.target as HTMLElement)
-      },
+      focusout: handleFocusOut,
+      focusin: handleFocusIn,
     } : {}"
   >
     <slot />
